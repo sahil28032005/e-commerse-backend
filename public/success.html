@@ -83,7 +83,7 @@
 
     async function fetchSessionDetails(sessionId) {
       try {
-        const response = await fetch(`http://localhost:3000/api/v1/products/get-session/${sessionId}`);
+        const response = await fetch(`https://e-commerse-backend-yeft.onrender.com/api/v1/products/get-session/${sessionId}`);
         if (!response.ok) {
           throw new Error('Failed to fetch session details.');
         }
