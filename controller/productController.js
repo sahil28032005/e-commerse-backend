@@ -8,7 +8,7 @@ const { getEnabledCategories } = require('trace_events');
 const braintree = require("braintree");
 const { captureRejectionSymbol } = require('events');
 //stripe imports
-const YOUR_DOMAIN = 'http://localhost:3000';
+const YOUR_DOMAIN = 'https://e-commerse-frontend.vercel.app';
 var formidable = require('formidable');
 const transactionHistory = require('../models/transactionHistory');
 const stripe = require('stripe')(process.env.stripe_secret_key);
