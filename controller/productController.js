@@ -12,6 +12,8 @@ const YOUR_DOMAIN = 'https://e-commerse-frontend.vercel.app';
 var formidable = require('formidable');
 const transactionHistory = require('../models/transactionHistory');
 const stripe = require('stripe')(process.env.stripe_secret_key);
+const cloudinary = require('cloudinary').v2;
+
 // const { default: ProductsDisplayer } = require('../frontend/src/admin/ProductsDisplayer');
 //creating product
 //payment gateway integration
@@ -22,82 +24,83 @@ const gateway = new braintree.BraintreeGateway({
     publicKey: "k33qy3y36hkvz7cn",
     privateKey: "dd9933170e7b034182bf7c8b05a58371"
 });
+//v1 product controller
+// const productController = async (req, res) => {
+//     try {
+//         const { name, description, slug, price, category, quantity, shipping } = req.fields;
+//         const { filedata0, filedata1, filedata2, filedata3 } = req.files;
+//         // console.log("filedata",filedata);
+//         switch (true) {
+//             case !name:
+//                 return res.status(301).send({ success: false, message: 'name not arriven' });
+//             case !description:
+//                 return res.status(301).send({ success: false, message: 'description not arriven' });
+//             case !quantity:
+//                 return res.status(301).send({ success: false, message: 'quantity not arriven' });
+//             case !category:
+//                 return res.status(301).send({ success: false, message: 'categiry not arriven' });
+//             case filedata0 && filedata0.size > 1 * 1024 * 1024:
+//                 return res.status(301).send({ success: false, message: 'photo required but less than 1 mb' });
+//             case !shipping:
+//                 return res.status(301).send({ success: false, message: 'shippiong status not arriven' });
+//             case !filedata0:
+//                 return res.status(301).send({ success: false, message: 'photo not arriven' });
 
-const productController = async (req, res) => {
-    try {
-        const { name, description, slug, price, category, quantity, shipping } = req.fields;
-        const { filedata0, filedata1, filedata2, filedata3 } = req.files;
-        // console.log("filedata",filedata);
-        switch (true) {
-            case !name:
-                return res.status(301).send({ success: false, message: 'name not arriven' });
-            case !description:
-                return res.status(301).send({ success: false, message: 'description not arriven' });
-            case !quantity:
-                return res.status(301).send({ success: false, message: 'quantity not arriven' });
-            case !category:
-                return res.status(301).send({ success: false, message: 'categiry not arriven' });
-            case filedata0 && filedata0.size > 1 * 1024 * 1024:
-                return res.status(301).send({ success: false, message: 'photo required but less than 1 mb' });
-            case !shipping:
-                return res.status(301).send({ success: false, message: 'shippiong status not arriven' });
-            case !filedata0:
-                return res.status(301).send({ success: false, message: 'photo not arriven' });
+//         }
+//         // const form = formidable();
 
-        }
-        // const form = formidable();
+//         // form.parse(req, async (error, fieldsMultiple, files) => {
+//         //     console.log("progress....");
+//         //     if (error) {
+//         //         console.error('Form parsing error:', error.message);
+//         //         return res.status(500).send({
+//         //             success: false,
+//         //             message: 'Form parsing error',
+//         //             error: error.message,
+//         //         });
+//         //     }
+//         //     console.log('Fields:', fieldsMultiple);
+//         //     console.log('Files:', files);
+//         //     return res.status(201).send({
+//         //         success: true,
+//         //         message: 'Product created successfully',
 
-        // form.parse(req, async (error, fieldsMultiple, files) => {
-        //     console.log("progress....");
-        //     if (error) {
-        //         console.error('Form parsing error:', error.message);
-        //         return res.status(500).send({
-        //             success: false,
-        //             message: 'Form parsing error',
-        //             error: error.message,
-        //         });
-        //     }
-        //     console.log('Fields:', fieldsMultiple);
-        //     console.log('Files:', files);
-        //     return res.status(201).send({
-        //         success: true,
-        //         message: 'Product created successfully',
+//         //     });
+//         // });
 
-        //     });
-        // });
+//         const entry = new productSchema({ ...req.fields, slug: slugify(name) });
+//         if (filedata0) {
+//             entry.photo.data = fs.readFileSync(filedata0.path);
+//             entry.photos.push({ data: fs.readFileSync(filedata0.path), contentType: filedata0.contentType });
+//             entry.photo.contentType = filedata0.type;
+//         }
+//         if (filedata1) {
+//             entry.photos.push({ data: fs.readFileSync(filedata1.path), contentType: filedata1.contentType });
+//         }
+//         if (filedata2) {
+//             entry.photos.push({ data: fs.readFileSync(filedata2.path), contentType: filedata2.contentType });
+//         }
+//         if (filedata3) {
+//             entry.photos.push({ data: fs.readFileSync(filedata3.path), contentType: filedata3.contentType });
+//         }
+//         await entry.save();
+//         res.status(201).send({
+//             success: true,
+//             message: 'product added successfully',
+//             file0: filedata0,
+//             file1: filedata1
+//         });
 
-        const entry = new productSchema({ ...req.fields, slug: slugify(name) });
-        if (filedata0) {
-            entry.photo.data = fs.readFileSync(filedata0.path);
-            entry.photos.push({ data: fs.readFileSync(filedata0.path), contentType: filedata0.contentType });
-            entry.photo.contentType = filedata0.type;
-        }
-        if (filedata1) {
-            entry.photos.push({ data: fs.readFileSync(filedata1.path), contentType: filedata1.contentType });
-        }
-        if (filedata2) {
-            entry.photos.push({ data: fs.readFileSync(filedata2.path), contentType: filedata2.contentType });
-        }
-        if (filedata3) {
-            entry.photos.push({ data: fs.readFileSync(filedata3.path), contentType: filedata3.contentType });
-        }
-        await entry.save();
-        res.status(201).send({
-            success: true,
-            message: 'product added successfully',
-            file0: filedata0,
-            file1: filedata1
-        });
-
-    }
-    catch (error) {
-        res.status(601).send({
-            success: false,
-            message: 'unable to create product',
-            error: error.message
-        });
-    }
-}
+//     }
+//     catch (error) {
+//         res.status(601).send({
+//             success: false,
+//             message: 'unable to create product',
+//             error: error.message
+//         });
+//     }
+// }
+//first try
 // const productController = async (req, res) => {
 //     try {
 //         console.log('Starting to process the request...');
@@ -127,6 +130,100 @@ const productController = async (req, res) => {
 //         });
 //     }
 // };
+
+//v2 product controller
+const productController = async (req, res) => {
+    try {
+        const { name, description, slug, price, category, quantity, shipping } = await req.body;
+        var file = await req.files;
+        switch (true) {
+            case !name:
+                return res.status(301).send({ success: false, message: 'name not arriven' });
+            case !description:
+                return res.status(301).send({ success: false, message: 'description not arriven' });
+            case !quantity:
+                return res.status(301).send({ success: false, message: 'quantity not arriven' });
+            case !category:
+                return res.status(301).send({ success: false, message: 'categiry not arriven' });
+            // case filedata0 && filedata0.size > 1 * 1024 * 1024:
+            //     return res.status(301).send({ success: false, message: 'photo required but less than 1 mb' });
+            case !shipping:
+                return res.status(301).send({ success: false, message: 'shippiong status not arriven' });
+            // case !filedata0:
+            //     return res.status(301).send({ success: false, message: 'photo not arriven' });
+
+        }
+        // const form = formidable();
+
+        // form.parse(req, async (error, fieldsMultiple, files) => {
+        //     console.log("progress....");
+        //     if (error) {
+        //         console.error('Form parsing error:', error.message);
+        //         return res.status(500).send({
+        //             success: false,
+        //             message: 'Form parsing error',
+        //             error: error.message,
+        //         });
+        //     }
+        //     console.log('Fields:', fieldsMultiple);
+        //     console.log('Files:', files);
+        //     return res.status(201).send({
+        //         success: true,
+        //         message: 'Product created successfully',
+
+        //     });
+        // });
+
+        // const entry = new productSchema({ ...req.fields, slug: slugify(name) });
+        // if (filedata0) {
+        //     entry.photo.data = fs.readFileSync(filedata0.path);
+        //     entry.photos.push({ data: fs.readFileSync(filedata0.path), contentType: filedata0.contentType });
+        //     entry.photo.contentType = filedata0.type;
+        // }
+        // if (filedata1) {
+        //     entry.photos.push({ data: fs.readFileSync(filedata1.path), contentType: filedata1.contentType });
+        // }
+        // if (filedata2) {
+        //     entry.photos.push({ data: fs.readFileSync(filedata2.path), contentType: filedata2.contentType });
+        // }
+        // if (filedata3) {
+        //     entry.photos.push({ data: fs.readFileSync(filedata3.path), contentType: filedata3.contentType });
+        // }
+        // await entry.save();
+
+        //here you have to write uploader endpoints calls
+        const optimizedUrls = [];//store url temprory insidee this arr
+        // console.log("tesuehksdfn",Array.isArray(file));
+        const after = file.map(async (item) => {
+            const result = await cloudinary.uploader.upload(item.path);
+            const optimizeUrl = result.secure_url;
+            optimizedUrls.push(optimizeUrl);
+        });
+        const uploadResults = await Promise.all(after);
+        // for (const image in file) {
+        //     // console.log('filedata', file[image]);
+        //     const result = await cloudinary.uploader.upload(file[image].path);
+        //     const optimizeUrl = result.secure_url;
+        //     optimizedUrls.push(optimizeUrl);
+        // }
+        //after this create database entry to store received photos url
+        const entry = await new productSchema({ ...req.body, slug: slugify(name), photos: optimizedUrls });
+        await entry.save();
+        res.status(201).send({
+            success: true,
+            message: 'product added successfully',
+            data_uploaded: optimizedUrls
+        });
+
+    }
+    catch (error) {
+        res.status(601).send({
+            success: false,
+            message: 'unable to create product',
+            error: error.message
+        });
+    }
+}
 
 
 //api to get all products

@@ -1,11 +1,47 @@
 var express = require('express');
-const {getParticularPhoto, getSessionDetails, sessionManager, searchThroughKeyword, getSimilarAsPerCatIds, productController, getAllproducts, getSingleProduct, getPhoto, deleteProduct, updateProduct, filterProducts, getCount, getProducts, similarProducts, getClientToken, makePayment } = require('../controller/productController');
+const { getParticularPhoto, getSessionDetails, sessionManager, searchThroughKeyword, getSimilarAsPerCatIds, productController, getAllproducts, getSingleProduct, getPhoto, deleteProduct, updateProduct, filterProducts, getCount, getProducts, similarProducts, getClientToken, makePayment } = require('../controller/productController');
 const router = express.Router();
 const formidable = require('express-formidable');
+const path = require("node:path");
+//multer configutrations
+const multer = require("multer");
+const destination = path.join(__dirname, "../uploads");
+
+// all configurations for multer middleware
+const storageConfig = multer.diskStorage({
+    // destinations is uploads folder 
+    // under the project directory
+    destination: destination,
+    filename: (req, file, res) => {
+        // file name is prepended with current time
+        // in milliseconds to handle duplicate file names
+        res(null, Date.now() + "-" + file.originalname);
+    },
+});
+const fileFilterConfig = function (req, file, cb) {
+    if (file.mimetype === "image/jpeg"
+        || file.mimetype === "image/png" || file.mimetype === "video/mp4") {
+        // calling callback with true
+        // as mimetype of file is image
+        cb(null, true);
+    } else {
+        // false to indicate not to store the file
+        cb(null, false);
+    }
+};
+const upload = multer({
+    // applying storage and file filter
+    storage: storageConfig,
+    // limits: {
+    //     // limits file size to 5 MB
+    //     fileSize: 1024 * 1024 * 5
+    // },
+    fileFilter: fileFilterConfig,
+});
 //all apis related to product are here
 
 //api for create product
-router.post('/create-product', formidable(), productController);
+router.post('/create-product', /*formidable()*/upload.array('file', 10), productController);
 
 //rpute for get all products
 router.get('/get-all/:offset', getAllproducts);
