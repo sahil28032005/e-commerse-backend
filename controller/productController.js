@@ -195,7 +195,7 @@ const productController = async (req, res) => {
         const optimizedUrls = [];//store url temprory insidee this arr
         // console.log("tesuehksdfn",Array.isArray(file));
         const after = file.map(async (item) => {
-            const result = await cloudinary.uploader.upload(item.path);
+            const result = await cloudinary.uploader.upload(item.path, { resource_type: item.mimetype.startsWith('video/') ? 'video' : 'image', overwrite: true, notification_url: "https://mysite.example.com/notify_endpoint" });
             const optimizeUrl = result.secure_url;
             optimizedUrls.push(optimizeUrl);
         });
