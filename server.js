@@ -7,6 +7,7 @@ const conDb = require('./config/db');
 const routes = require('./routes/userAuthentication.js');
 const categoryroute = require('./routes/categoryRoutes.js');
 const productsroute = require('./routes/productRoutes.js');
+const reviewRoutes = require('./routes/ratingsReviewsRoute.js');
 const cartRoutes = require('./routes/cartRoute.js');
 const transactionRoutes = require('./routes/transactionRoute.js');
 const ordersRoute = require('./routes/orderRoutes.js');
@@ -97,6 +98,7 @@ app.use('/api/v1/products', productsroute);
 app.use('/api/v1/cart', cartRoutes);
 app.use('/api/v1/orders', ordersRoute);
 app.use('/api/v1/transactions', transactionRoutes);
+app.use('/api/v1/reviews', reviewRoutes);
 app.use(formidableMiddleware());
 
 

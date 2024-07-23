@@ -1,5 +1,6 @@
 const categorySchema = require('./categorySchema');
 const mongoose = require('mongoose');
+reviewsAndRatings
 const productSchema = mongoose.Schema({
     name: {
         type: 'string',
@@ -22,6 +23,7 @@ const productSchema = mongoose.Schema({
         ref: categorySchema,
         required: true
     },
+   
     quantity: {
         type: Number,
         required: true
@@ -33,10 +35,7 @@ const productSchema = mongoose.Schema({
     photos: [{
         type: String,
         required: true,
-    }]
-    // photos: [{
-    //     data: Buffer,
-    //     contentType: String,
-    // }]
+    }],
+  
 }, { timestamps: true });
 module.exports = mongoose.model('products', productSchema);
