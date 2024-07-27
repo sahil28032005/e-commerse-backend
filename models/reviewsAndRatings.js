@@ -1,16 +1,13 @@
 const mongoose = require('mongoose');
 const userSchema = require('./userSchema');
-const productSchema = require('./productSchema');
-const { Schema } = mongoose;
 const reviewsSchema = mongoose.Schema({
     user: {
-        type: Schema.Types.ObjectId,
+        type:mongoose.ObjectId,
         ref: userSchema,
         required: true
     },
     product:{
-        type: Schema.Types.ObjectId,
-        ref: productSchema,
+        type: 'string',
         required: true
     },
     starRating: {

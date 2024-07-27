@@ -1,6 +1,6 @@
-const categorySchema = require('./categorySchema');
 const mongoose = require('mongoose');
-reviewsAndRatings
+const categorySchema = require('./categorySchema');
+const reviewsAndRatings = require('./reviewsAndRatings');
 const productSchema = mongoose.Schema({
     name: {
         type: 'string',
@@ -23,7 +23,7 @@ const productSchema = mongoose.Schema({
         ref: categorySchema,
         required: true
     },
-   
+
     quantity: {
         type: Number,
         required: true
@@ -36,6 +36,17 @@ const productSchema = mongoose.Schema({
         type: String,
         required: true,
     }],
-  
+    reviews: [{
+        type: mongoose.ObjectId,
+        ref: reviewsAndRatings
+    }],
+    reviewsTotal: {
+        type: Number,
+        default: 0
+    },
+    averageRating: {
+        type: Number
+    }
+
 }, { timestamps: true });
 module.exports = mongoose.model('products', productSchema);
