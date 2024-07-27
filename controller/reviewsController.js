@@ -44,7 +44,7 @@ const createReview = async (req, res) => {
     console.log("review added successfully");
     // Update the product with the new review means push review id inside product
     // 1)find the product first whose ratings you wanna add
-    const product = await productSchema.findById(pId);
+    const product = await productSchema.findById(pId).populate('reviews');
     // console.log("product found successfully"); herer we have found product whose review we wanna add
     await product.reviews.push(reviewEntry._id);
     //also increase revuiew count as new review pushed into oarticular priduct
