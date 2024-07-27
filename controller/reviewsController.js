@@ -57,7 +57,7 @@ const createReview = async (req, res) => {
     // const thressStartRes = await product.response.reviews.map((review) => {
     //   return review.starRating == 3
     // });
-    const threeStar = await productSchema.aggregate([{
+    const starRatings = await productSchema.aggregate([{
       $match: { _id: new mongoose.Types.ObjectId(pId) }
     }, {
       $lookup:
@@ -70,11 +70,51 @@ const createReview = async (req, res) => {
     }, {
       $unwind: '$reviewsForeign'
     }, { $project: { "reviewsForeign": 1 } }, {
-      $match: { "reviewsForeign.starRating": 3 }
-    },{
-      $count: "threeStarRatingsRecords"
+      $facet: {
+        oneStar: [{ $match: { "reviewsForeign.starRating": 1 } }, { $count: "oneStarRatingsRecords" }],
+        twoStar: [{ $match: { "reviewsForeign.starRating": 2 } }, { $count: "twoStarRatingsRecords" }],
+        threeStar: [{ $match: { "reviewsForeign.starRating": 3 } }, { $count: "threeStarRatingsRecords" }],
+        fourStar: [{ $match: { "reviewsForeign.starRating": 4 } }, { $count: "fourStarRatingsRecords" }],
+        fiveStar: [{ $match: { "reviewsForeign.starRating": 5 } }, { $count: "fiveStarRatingsRecords" }],
+      }
     }]);
-    console.log("review having three star", threeStar);
+    console.log("review having three star", starRatings[0].threeStar);
+    //return necessary dara as:
+    // 1)total review
+    //2)average of all
+    //3)particular review score
+    //4)text reviews
+
+    //getting individual values
+    const counts = starRatings[0]; // Access the first element of the result array
+    const oneStarCount = counts.oneStar.length > 0 ? counts.oneStar[0].oneStarRatingsRecords : 0;
+    const twoStarCount = counts.twoStar.length > 0 ? counts.twoStar[0].twoStarRatingsRecords : 0;
+    const threeStarCount = counts.threeStar.length > 0 ? counts.threeStar[0].threeStarRatingsRecords : 0;
+    const fourStarCount = counts.fourStar.length > 0 ? counts.fourStar[0].fourStarRatingsRecords : 0;
+    const fiveStarCount = counts.fiveStar.length > 0 ? counts.fiveStar[0].fiveStarRatingsRecords : 0;
+
+    // Calculate the average total count
+    const totalRatingsCount = oneStarCount + twoStarCount + threeStarCount + fourStarCount + fiveStarCount;
+    const weightedSum = (1 * oneStarCount) + (2 * twoStarCount) + (3 * threeStarCount) + (4 * fourStarCount) + (5 * fiveStarCount);
+    const averageRating = totalRatingsCount > 0 ? (weightedSum / totalRatingsCount).toFixed(1) : 0;
+
+    console.log({
+      oneStarCount,
+      twoStarCount,
+      threeStarCount,
+      fourStarCount,
+      fiveStarCount,
+      averageRating
+    });
+
+    //return response from api as an frontend supplier
+    return res.status(201).send({
+      success: true,
+      individualRating: { one: oneStarCount, two: twoStarCount, three: threeStarCount, four: fourStarCount, five: fiveStarCount },
+      totalRatings: totalRatingsCount,
+      averageRating: averageRating,
+      totalReviews: product.reviews
+    });
 
 
   }
