@@ -46,7 +46,22 @@ const productSchema = mongoose.Schema({
     },
     averageRating: {
         type: Number
-    }
+    },
+    oneStar:{
+        type:Number
+    },
+    twoStar:{
+        type:Number
+    },
+    threeStar:{
+        type:Number
+    },
+    fourStar:{
+        type:Number
+    },
+    fiveStar:{
+        type:Number
+    },
 
 }, { timestamps: true });
 module.exports = mongoose.model('products', productSchema);
