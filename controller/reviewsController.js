@@ -93,10 +93,17 @@ const createReview = async (req, res) => {
     const fourStarCount = counts.fourStar.length > 0 ? counts.fourStar[0].fourStarRatingsRecords : 0;
     const fiveStarCount = counts.fiveStar.length > 0 ? counts.fiveStar[0].fiveStarRatingsRecords : 0;
 
+
     // Calculate the average total count
     const totalRatingsCount = oneStarCount + twoStarCount + threeStarCount + fourStarCount + fiveStarCount;
     const weightedSum = (1 * oneStarCount) + (2 * twoStarCount) + (3 * threeStarCount) + (4 * fourStarCount) + (5 * fiveStarCount);
     const averageRating = totalRatingsCount > 0 ? (weightedSum / totalRatingsCount).toFixed(1) : 0;
+    //here correctly set particular start ratings for product records
+    product.oneStar = oneStarCount;
+    product.twoStar = twoStarCount;
+    product.threeStar = threeStarCount;
+    product.fourStar = fourStarCount;
+    product.fiveStar = fiveStarCount;
 
     //update that values in prpduct schema at time of next retrival they will be populated
     product.averageRating = averageRating;
@@ -131,14 +138,21 @@ const getReviewsInformations = async (req, res) => {
     //retrived data with tge help of product ud arrived from param
     const { pId } = req.params;
     //retrived data based on pId and send inly necessary fields to frontend as claen object
-    const information = await productSchema.findById({ _id: pId }).populate('reviews').select('reviews averageRating reviewsTotal');
+    const information = await productSchema.findById({ _id: pId }).populate('reviews').select('reviews averageRating reviewsTotal oneStar twoStar threeStar fourStar fiveStar');
     if (information) {
       console.log("product found!", information);
       //at this pipeline we have 1)total reviews count 2)reviews from customer as text 3)average rating in terms of stars
       return res.status(200).send({
         totalReviews: information.reviewsTotal,
         averageRating: information.averageRating,
-        textReiews: information.reviews
+        textReiews: information.reviews,
+        individualRatings: {
+          oneStar: information.oneStar,
+          twoStar: information.twoStar,
+          threeStar: information.threeStar,
+          fourStar: information.fourStar,
+          fiveStar: information.fiveStar
+        }
       });
     }
     else {
