@@ -98,6 +98,9 @@ const createReview = async (req, res) => {
     const weightedSum = (1 * oneStarCount) + (2 * twoStarCount) + (3 * threeStarCount) + (4 * fourStarCount) + (5 * fiveStarCount);
     const averageRating = totalRatingsCount > 0 ? (weightedSum / totalRatingsCount).toFixed(1) : 0;
 
+    //update that values in prpduct schema at time of next retrival they will be populated
+    product.averageRating = averageRating;
+    await product.save();
     console.log({
       oneStarCount,
       twoStarCount,
@@ -122,4 +125,35 @@ const createReview = async (req, res) => {
     res.status(500).send({ success: false, message: err.message });
   }
 }
-module.exports = { createReview };
+//controlller which provides review information based on product id as reference param
+const getReviewsInformations = async (req, res) => {
+  try {
+    //retrived data with tge help of product ud arrived from param
+    const { pId } = req.params;
+    //retrived data based on pId and send inly necessary fields to frontend as claen object
+    const information = await productSchema.findById({ _id: pId }).populate('reviews').select('reviews averageRating reviewsTotal');
+    if (information) {
+      console.log("product found!", information);
+      //at this pipeline we have 1)total reviews count 2)reviews from customer as text 3)average rating in terms of stars
+      return res.status(200).send({
+        totalReviews: information.reviewsTotal,
+        averageRating: information.averageRating,
+        textReiews: information.reviews
+      });
+    }
+    else {
+      return res.status(401).send({
+        success: false,
+        message: 'product with given param was not found otherwise param is undefined',
+      });
+    }
+  }
+  catch (err) {
+    res.status(401).send({
+      success: false,
+      message: 'error fetch data from api',
+      problem: err.message
+    });
+  }
+}
+module.exports = { createReview, getReviewsInformations };
