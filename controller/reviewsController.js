@@ -138,7 +138,12 @@ const getReviewsInformations = async (req, res) => {
     //retrived data with tge help of product ud arrived from param
     const { pId } = req.params;
     //retrived data based on pId and send inly necessary fields to frontend as claen object
-    const information = await productSchema.findById({ _id: pId }).populate('reviews').select('reviews averageRating reviewsTotal oneStar twoStar threeStar fourStar fiveStar');
+    const information = await productSchema.findById({ _id: pId }).populate({
+      path: 'reviews',
+      populate: {
+        path: 'user',
+      }
+    }).select('reviews averageRating reviewsTotal oneStar twoStar threeStar fourStar fiveStar');
     if (information) {
       console.log("product found!", information);
       //at this pipeline we have 1)total reviews count 2)reviews from customer as text 3)average rating in terms of stars
