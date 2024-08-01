@@ -2,16 +2,43 @@ const reviewsSchema = require('../models/reviewsAndRatings');
 const orderSchema = require('../models/orderSchema');
 const productSchema = require('../models/productSchema');
 const mongoose = require('mongoose');
+
+//cloudinary imports
+const cloudinary = require('cloudinary').v2;
 //all controllers for reviews handlers
+
+
 
 //create review
 const createReview = async (req, res) => {
   try {
     const { userId, review, rating, pId } = req.body;
+    let image_uri = "";
+    const fileData = req.file;//this is optiional as depends on user if he prpovides or not no nedd to validate its input
+    if (fileData) {
+      //write cloudinary optimization routes here and mive further
+      const uploadResult = await cloudinary.uploader
+        .upload(
+          fileData.path, {
+          public_id: fileData.orignalname,
+        }
+        )
+        .catch((error) => {
+          console.log(error);
+        });
 
+      console.log(uploadResult);
+
+      //getting url for store in database
+      image_uri = await cloudinary.url(uploadResult.public_id);
+      //at this point we have cloudinary url need to stoer them
+      //better option to be done in below single entry call
+
+    }
+    console.log("filedata as customer is ", fileData);
     //before creating review check weather user actually buiyed that particular product
     const [userDspecificorders] = await orderSchema.find({ user: userId });
-    console.log("users orders details found", userDspecificorders.orders);
+    console.log("users orders details found", userDspecificorders?.orders);
     if (!userDspecificorders || !userDspecificorders.orders || userDspecificorders.orders.length === 0) {
       return res.status(400).send({
         success: false,
@@ -38,7 +65,8 @@ const createReview = async (req, res) => {
       user: userId,
       reviewText: review,
       starRating: rating,
-      product: pId
+      product: pId,
+      photoUrl: image_uri
     });
     await reviewEntry.save();
     console.log("review added successfully");
