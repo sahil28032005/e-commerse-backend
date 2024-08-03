@@ -134,7 +134,7 @@ const gateway = new braintree.BraintreeGateway({
 //v2 product controller
 const productController = async (req, res) => {
     try {
-        const { name, description, slug, price, category, quantity, shipping } = await req.body;
+        const { name, description, slug, price, category, subCategory, quantity, shipping } = await req.body;
         var file = await req.files;
         switch (true) {
             case !name:
@@ -145,6 +145,8 @@ const productController = async (req, res) => {
                 return res.status(301).send({ success: false, message: 'quantity not arriven' });
             case !category:
                 return res.status(301).send({ success: false, message: 'categiry not arriven' });
+            case !subCategory:
+                return res.status(301).send({ success: false, message: 'subCategory not arriven' });
             // case filedata0 && filedata0.size > 1 * 1024 * 1024:
             //     return res.status(301).send({ success: false, message: 'photo required but less than 1 mb' });
             case !shipping:
@@ -264,7 +266,7 @@ const getSingleProduct = async (req, res) => {
         const { id } = req.params;
         const product = await productSchema.findOne({ '_id': id })
             .select('-photo')
-            .populate('category');
+            .populate('category subCategory');
         if (product) {
 
             res.status(201).send({
