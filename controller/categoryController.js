@@ -1,17 +1,28 @@
-const categoryModel = require('../models/categorySchema');
+const { subCat, cat } = require('../models/categorySchema');
 var slugify = require('slugify')
 //for creating category
 const categoryController = async (req, res) => {
 
     try {
         // res.send("success...");
-        const { categoryName } = req.body;
-        const record = new categoryModel({
-            name: categoryName,
-            slug: slugify(categoryName)
+        //try creating sub cat first and then append it inside mainc category if not already exists
+
+        const { categoryName, subCatName, reviewsCategory } = req.body;
+        const subCatRec = new subCat({
+            name: subCatName,
+            reviewsCategory: reviewsCategory,
+
         });
-        const existingCategory = await categoryModel.findOne({ name: categoryName });;
+
+        const existingCategory = await cat.findOne({ name: categoryName });
         if (!existingCategory) {
+            await subCatRec.save();
+            console.log("subCategory saved");
+            const record = new cat({
+                name: categoryName,
+                slug: slugify(categoryName),
+                subCategories: [subCatRec]
+            });
             await record.save();
             // console.log("category inserted in database");
             res.status(200).send({
@@ -21,11 +32,28 @@ const categoryController = async (req, res) => {
             });
         }
         else {
+            //in this block category already exists just push sub category if it not exists
+            //check weather arrived sub category already present or not
+            const subCategoryPresence = existingCategory.subCategories.some(sub => sub.name === subCatName);
+            if (subCategoryPresence) {
+                //sub category present dont need to do anything
+                console.log("sub category alredy present");
+            }
+            else {
+                //append subcategory inside array
+                await subCatRec.save();
+                existingCategory.subCategories.push(subCatRec);
+                await existingCategory.save();
+                console.log("sub category pushed it existing catrgory");
+            }
             res.status(200).send({
                 success: false,
                 message: 'category already exists in database'
             });
         }
+
+
+
 
     }
     catch (error) {
@@ -50,7 +78,7 @@ const updateCategory = async (req, res) => {
         }
         const filter = { _id: categoryId };
         const update = { name: updateVal, slug: slugify(updateVal) };
-        let doc = await categoryModel.findOneAndUpdate(filter, update);
+        let doc = await cat.findOneAndUpdate(filter, update);
         if (doc) {
             res.status(201).send({
                 success: true,
@@ -75,10 +103,10 @@ const updateCategory = async (req, res) => {
 
 }
 
-//api to provide all categories presend in categoryModel
+//api to provide all categories presend in cat
 const getAll = async (req, res) => {
     try {
-        const doc = await categoryModel.find();
+        const doc = await cat.find();
         res.status(200).send({
             success: true,
             message: "yet correct all",
@@ -100,7 +128,7 @@ const getSingleCarategory = async (req, res) => {
         if (!categoryName) {
             return res.status(400).send({ error: 'category name was not provided' });
         }
-        const category = await categoryModel.findOne({ 'slug': categoryName });
+        const category = await cat.findOne({ 'slug': categoryName });
         if (category) {
             res.status(200).send({
                 success: true,
@@ -128,14 +156,14 @@ const getSingleCarategory = async (req, res) => {
 const deleteCategory = async (req, res) => {
     try {
         const { id } = req.params;
-        const deletedCount = await categoryModel.deleteOne({ _id: id });
+        const deletedCount = await cat.deleteOne({ _id: id });
         if (deletedCount.deletedCount) {
             res.status(200).send({
                 success: true,
                 message: 'deleted category'
             });
         }
-        else{
+        else {
             res.status(200).send({
                 success: false,
                 message: 'category not found for deletion...'
