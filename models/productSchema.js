@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const categorySchema = require('./categorySchema');
+const { subCat, cat } = require('./categorySchema');
 const reviewsAndRatings = require('./reviewsAndRatings');
 const productSchema = mongoose.Schema({
     name: {
@@ -20,10 +20,13 @@ const productSchema = mongoose.Schema({
     },
     category: {
         type: mongoose.ObjectId,
-        ref: categorySchema,
+        ref: cat,
         required: true
     },
-
+    subCategory: {
+        type: mongoose.ObjectId,
+        ref: subCat
+    },
     quantity: {
         type: Number,
         required: true
@@ -47,20 +50,20 @@ const productSchema = mongoose.Schema({
     averageRating: {
         type: Number
     },
-    oneStar:{
-        type:Number
+    oneStar: {
+        type: Number
     },
-    twoStar:{
-        type:Number
+    twoStar: {
+        type: Number
     },
-    threeStar:{
-        type:Number
+    threeStar: {
+        type: Number
     },
-    fourStar:{
-        type:Number
+    fourStar: {
+        type: Number
     },
-    fiveStar:{
-        type:Number
+    fiveStar: {
+        type: Number
     },
 
 }, { timestamps: true });
