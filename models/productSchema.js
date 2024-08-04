@@ -65,6 +65,9 @@ const productSchema = mongoose.Schema({
     fiveStar: {
         type: Number
     },
+    subSecReviewsPercent: [
+        { type: Number }
+    ]
 
 }, { timestamps: true });
 module.exports = mongoose.model('products', productSchema);
