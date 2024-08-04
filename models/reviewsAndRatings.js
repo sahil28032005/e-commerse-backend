@@ -1,12 +1,13 @@
 const mongoose = require('mongoose');
 const userSchema = require('./userSchema');
+const { subCat } = require('./categorySchema');
 const reviewsSchema = mongoose.Schema({
     user: {
-        type:mongoose.ObjectId,
+        type: mongoose.ObjectId,
         ref: userSchema,
         required: true
     },
-    product:{
+    product: {
         type: 'string',
         required: true
     },
@@ -23,6 +24,15 @@ const reviewsSchema = mongoose.Schema({
     photoUrl: {
         type: 'string',
         required: false
+    },
+    subCategory: {
+        type: mongoose.ObjectId,
+        ref: subCat,
+        required: true
+    },
+    subTypeChild:{
+        type:'string',
+        required: true
     }
 });
 module.exports = mongoose.model('reviews', reviewsSchema);
