@@ -264,9 +264,25 @@ const getAllproducts = async (req, res) => {
 const getSingleProduct = async (req, res) => {
     try {
         const { id } = req.params;
+        const { sortBy } = req.query;
+        let sortingOptions = {};
+
+        if (sortBy === 'date') {
+            console.log("arrived filters for sorting....");
+            sortingOptions = { 'createdAt': -1 }
+        }
+        else if (sortBy == 'rating') {
+            sortingOptions = { 'starRating': -1 }
+        }
+
+        console.log("soptions", sortBy);
+        console.log("soptionsAdv", sortingOptions);
+        
         const product = await productSchema.findOne({ '_id': id })
-            .select('-photo')
-            .populate('category subCategory');
+            .select('-photo').populate({
+                path: 'reviews',
+                options: { sort: sortingOptions }
+            }).populate('category subCategory');
         if (product) {
 
             res.status(201).send({
