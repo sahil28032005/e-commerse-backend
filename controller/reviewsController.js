@@ -212,9 +212,18 @@ const getReviewsInformations = async (req, res) => {
   try {
     //retrived data with tge help of product ud arrived from param
     const { pId } = req.params;
+    const { sortBy } = req.query;
+    let sortingOptions = {};
+    if (sortBy === 'date') {
+      console.log("arrived filters for sorting....");
+      sortingOptions = { 'createdAt': -1 }
+    }
+    else if (sortBy == 'rating') {
+      sortingOptions = { 'starRating': -1 }
+    }
     //retrived data based on pId and send inly necessary fields to frontend as claen object
     const information = await productSchema.findById({ _id: pId }).populate({
-      path: 'reviews',
+      path: 'reviews', options: { sort: sortingOptions },
       populate: {
         path: 'user',
       }
@@ -233,8 +242,8 @@ const getReviewsInformations = async (req, res) => {
           fourStar: information.fourStar,
           fiveStar: information.fiveStar
         },
-        percentGrp:information.subSecReviewsPercent,
-        subSectionLength:information.subSecReviewsPercent.length
+        percentGrp: information.subSecReviewsPercent,
+        subSectionLength: information.subSecReviewsPercent.length
       });
     }
     else {
