@@ -30,9 +30,9 @@ const reviewsSchema = mongoose.Schema({
         ref: subCat,
         required: true
     },
-    subTypeChild:{
-        type:'string',
+    subTypeChild: {
+        type: 'string',
         required: true
     }
-});
+}, { timestamps: true });
 module.exports = mongoose.model('reviews', reviewsSchema);
