@@ -1,4 +1,5 @@
 const { subCat, cat } = require('../models/categorySchema');
+const productSchema = require('../models/productSchema');
 var slugify = require('slugify')
 //for creating category
 const categoryController = async (req, res) => {
@@ -178,4 +179,29 @@ const deleteCategory = async (req, res) => {
         });
     }
 }
-module.exports = { categoryController, updateCategory, getAll, getSingleCarategory, deleteCategory }
+
+const getProductsByCategory = async (req, res) => {
+    try {
+        const categories = await cat.find();
+        const categoryWiseProducts = {};
+
+        for (const category of categories) {
+            const products = await productSchema.find({ category: category._id }).limit(6);
+            // console.log("products iteration", products);
+            categoryWiseProducts[category.name] = products;
+        }
+        res.status(200).send({
+            success: true,
+            message: 'data detched category wise',
+            data: categoryWiseProducts
+        });
+    }
+    catch (error) {
+        res.status(500).send({
+            success: false,
+            message: 'Error while fetching category-wise products',
+            error: error.message
+        });
+    }
+}
+module.exports = { categoryController, updateCategory, getAll, getSingleCarategory, deleteCategory, getProductsByCategory }

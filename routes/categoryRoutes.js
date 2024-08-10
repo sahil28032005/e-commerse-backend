@@ -1,7 +1,7 @@
 const express = require('express');
 const { verifierJwt, userPreviladgeChk } = require('../middlewares/verifierMiddle');
 const router = express.Router();
-const { categoryController, updateCategory, getAll, getSingleCarategory, deleteCategory } = require('../controller/categoryController');
+const { categoryController, updateCategory, getAll, getSingleCarategory, deleteCategory,getProductsByCategory } = require('../controller/categoryController');
 //all routes for category
 
 //router for creating category
@@ -19,4 +19,8 @@ router.get("/single/:categoryName", getSingleCarategory);
 
 //route for deleting category through id
 router.delete("/delete/:id",  deleteCategory);
+
+//router for homapage to fetch data for category
+router.get('/get-products-by-category', getProductsByCategory);
+
 module.exports = router;
