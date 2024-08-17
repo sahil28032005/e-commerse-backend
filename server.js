@@ -13,8 +13,11 @@ const transactionRoutes = require('./routes/transactionRoute.js');
 const ordersRoute = require('./routes/orderRoutes.js');
 const formidableMiddleware = require('express-formidable');
 const bodyParser = require('body-parser');
-const connectToclouDinary =require('./config/cloudinaryConnection.js');
+const connectToclouDinary = require('./config/cloudinaryConnection.js');
 var jwt = require('jsonwebtoken');
+
+//reddis imports
+const { client, connectToReddis } = require('./config/redisClient');
 
 
 var userProfile;
@@ -28,6 +31,7 @@ const userSchema = require('./models/userSchema.js');
 // const GOOGLE_CLIENT_SECRET = '';
 conDb();
 connectToclouDinary();
+connectToReddis(); ///reddis cloud connection for caching
 
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));

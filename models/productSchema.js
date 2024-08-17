@@ -1,6 +1,18 @@
 const mongoose = require('mongoose');
 const { subCat, cat } = require('./categorySchema');
 const reviewsAndRatings = require('./reviewsAndRatings');
+const colorOptionsSchema=mongoose.Schema(
+    {
+        color:{
+            type:String,
+            required:true,
+        },
+        photos:[{
+            type:String,
+            required:true,
+        }]
+    }
+);
 const productSchema = mongoose.Schema({
     name: {
         type: 'string',
@@ -67,7 +79,11 @@ const productSchema = mongoose.Schema({
     },
     subSecReviewsPercent: [
         { type: Number }
-    ]
+    ],
+    initialColor: {
+        type: String,
+        required: true
+    }
 
 }, { timestamps: true });
 module.exports = mongoose.model('products', productSchema);
