@@ -1,5 +1,6 @@
 const { subCat, cat } = require('../models/categorySchema');
 const productSchema = require('../models/productSchema');
+const { client } = require('../config/redisClient');
 var slugify = require('slugify')
 //for creating category
 const categoryController = async (req, res) => {
@@ -107,8 +108,25 @@ const updateCategory = async (req, res) => {
 //api to provide all categories presend in cat
 const getAll = async (req, res) => {
     try {
+        const cacheKey = 'allCategories';
+        //check data is alerady present in cache
+        const cachedData = await client.get(cacheKey);
+        if (cachedData) {
+            console.log("found in cache");
+            return res.status(200).send({
+                success: true,
+                message: 'data found in cache',
+                data: JSON.parse(cachedData)
+            });
+        }
+
+        //if not present in cache fetch form mongo
+        console.log("as it is first time fetching from database....");
         const doc = await cat.find();
-        res.status(200).send({
+        await client.set(cacheKey, JSON.stringify(doc), {
+            EX: 3600 // Cache expiration time in seconds (1 hour)
+        });
+        return res.status(200).send({
             success: true,
             message: "yet correct all",
             data: doc
@@ -118,7 +136,7 @@ const getAll = async (req, res) => {
     catch (error) {
         res.status(500).send({
             success: false,
-            message: error
+            message: error.message
         });
     }
 }
