@@ -1,9 +1,11 @@
 const redis = require('redis');
 
 const client = redis.createClient({
-    url: process.env.REDIS_URI,
-    password: process.env.REDIS_PASSWORD
-
+    password: process.env.REDIS_PASSWORD,  // Replace with your actual Redis Cloud password
+    socket: {
+        host: process.env.REDIS_URI_HOST,
+        port: 16822
+    }
 });
 
 client.on('error', (err) => console.log("reddis clinet error: ", err));
