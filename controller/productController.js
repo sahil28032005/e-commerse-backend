@@ -1,5 +1,6 @@
 var fs = require('fs');
 var http = require('http');
+const { client } = require('../config/redisClient');
 const productSchema = require('../models/productSchema');
 // const transactionHistory = require('../models/transactionHistory');
 const orderSchema = require('../models/orderSchema');
@@ -232,9 +233,24 @@ const productController = async (req, res) => {
 const getAllproducts = async (req, res) => {
     try {
         const { offset } = req.params;
+        const cacheKey = `products:${offset}`;
+
+        //check weather data is present in cache or not
+        const cachedProducts = await client.get(cacheKey);
+        if (cachedProducts) {
+            console.log("data found inside cache");
+            return res.status(200).send({
+                success: true,
+                message: 'products fetched successfully from cache',
+                data: JSON.parse(cachedProducts)
+            });
+
+        }
+        //otherwise fetch from database as normal hitting
         // console.log(offset);
-        const products = await productSchema.find().select(['-photo -photos']).sort({ createdAt: -1 }).populate('category').skip(offset).limit(6);
+        const products = await productSchema.find().sort({ createdAt: -1 }).populate('category').skip(offset).limit(6).select('_id name price photos description');
         if (products) {
+            client.set(cacheKey, JSON.stringify(products), 'EX', 3600);
             res.status(201).send({
                 total: products.length,
                 success: true,
@@ -255,7 +271,7 @@ const getAllproducts = async (req, res) => {
         res.status(601).send({
             success: false,
             message: 'error while fetching categories',
-            error: error
+            error: error.message
         });
     }
 }
@@ -277,7 +293,7 @@ const getSingleProduct = async (req, res) => {
 
         console.log("soptions", sortBy);
         console.log("soptionsAdv", sortingOptions);
-        
+
         const product = await productSchema.findOne({ '_id': id })
             .select('-photo').populate({
                 path: 'reviews',
