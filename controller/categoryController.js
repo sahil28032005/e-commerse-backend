@@ -2,6 +2,7 @@ const { subCat, cat } = require('../models/categorySchema');
 const productSchema = require('../models/productSchema');
 const { client } = require('../config/redisClient');
 var slugify = require('slugify')
+
 //for creating category
 const categoryController = async (req, res) => {
 
@@ -200,26 +201,45 @@ const deleteCategory = async (req, res) => {
 
 const getProductsByCategory = async (req, res) => {
     try {
-        const categories = await cat.find();
-        const categoryWiseProducts = {};
+        console.log("Checking cache for category-wise products...");
+        const cachedData = await client.get('categoryWiseProducts');
 
-        for (const category of categories) {
-            const products = await productSchema.find({ category: category._id }).limit(6);
-            // console.log("products iteration", products);
-            categoryWiseProducts[category.name] = products;
+        if (cachedData) {
+            console.log("Cache hit - returning cached data.");
+            const categoryWiseProducts = JSON.parse(cachedData);
+            return res.send({
+                success: true,
+                message: 'Data fetched category-wise from cache memory',
+                data: categoryWiseProducts
+            });
+        } else {
+            console.log("Cache miss - fetching data from database...");
+            const categories = await cat.find();
+            const categoryWiseProducts = {};
+
+            for (const category of categories) {
+                const products = await productSchema.find({ category: category._id }).limit(6).select('_id name price photos');
+                categoryWiseProducts[category.name] = products;
+            }
+
+            // Store the fetched data in cache with an expiry time
+            await client.set('categoryWiseProducts', JSON.stringify(categoryWiseProducts), 'EX', 3600);
+
+            console.log("Data fetched from database and stored in cache.");
+            return res.status(200).send({
+                success: true,
+                message: 'Data fetched category-wise',
+                data: categoryWiseProducts
+            });
         }
-        res.status(200).send({
-            success: true,
-            message: 'data detched category wise',
-            data: categoryWiseProducts
-        });
-    }
-    catch (error) {
-        res.status(500).send({
+    } catch (error) {
+        console.error("Error while fetching category-wise products:", error);
+        return res.status(500).send({
             success: false,
             message: 'Error while fetching category-wise products',
             error: error.message
         });
     }
-}
+};
+
 module.exports = { categoryController, updateCategory, getAll, getSingleCarategory, deleteCategory, getProductsByCategory }
